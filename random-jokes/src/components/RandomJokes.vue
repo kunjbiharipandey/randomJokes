@@ -3,14 +3,14 @@
   <b-tabs content-class="mt-3" >
     <b-tab title="Home" active @click="tabEmitted('Home')">
       <div class="tab-pane fade show active" id="home">
-       <div v-if="jokesJson" class="hello">
-    <div v-for="(joke ) in jokesJson"   :key="joke.value" class="d-flex mt-1 text-left"> <div class="col-2"><button class="btn" :class="isAddedtoFav(joke)" @click="addToFavouraites(joke)"> {{joke.addedtoFav ?  'Remove from fav': 'Add To Fav'}}</button></div> <div class="">{{joke.value}}</div> </div>
+       <div v-if="listOfJokes" class="hello">
+    <div v-for="(joke ) in listOfJokes"   :key="joke.value" class="d-flex mt-1 text-left"> <div class="col-2"><button class="btn" :class="isAddedtoFav(joke)" @click="addToFavouraites(joke)"> {{joke.addedtoFav ?  'Remove from fav': 'Add To Fav'}}</button></div> <div class="">{{joke.value}}</div> </div>
   </div>
     </div>
     </b-tab>
     <b-tab title="favorite"  >
-         <div v-if="favorites" class="hello">
-    <div v-for="(joke ) in favorites"   :key="joke.value" class="d-flex mt-1 text-left">  <div >{{joke.value}}</div> </div>
+         <div v-if="listOfFavJokes" class="hello">
+    <div v-for="(joke ) in listOfFavJokes"   :key="joke.value" class="d-flex mt-1 text-left">  <div >{{joke.value}}</div> </div>
   </div>
     </b-tab>
   </b-tabs>
@@ -25,8 +25,8 @@ export default {
   data () {
     return {
       msg: 'Welcome to Your Vue.js App',
-      jokesJson: [],
-      favorites: []
+      listOfJokes: [],
+      listOfFavJokes: []
     }
   },
   beforeDestroy () {
@@ -35,12 +35,12 @@ export default {
   mounted: async function () {
     window.addEventListener('beforeunload', this.persistfavData)
     if (localStorage.getItem('myFavJokes')) {
-      this.favorites = JSON.parse(localStorage.getItem('myFavJokes'))
+      this.listOfFavJokes = JSON.parse(localStorage.getItem('myFavJokes'))
     }
     for (let i = 0; i < 10; i++) {
       const data = await this.getIntialJokes()
       if (data) {
-        this.jokesJson = [...this.jokesJson, data]
+        this.listOfJokes = [...this.listOfJokes, data]
       }
     }
     setInterval(this.getNewJoke, 5000)
@@ -50,15 +50,15 @@ export default {
       return joke.addedtoFav ? 'btn-warning' : 'btn-primary'
     },
     persistfavData () {
-      if (this.favorites.length > 0) {
-        localStorage.setItem('myFavJokes', JSON.stringify(this.favorites))
+      if (this.listOfFavJokes.length > 0) {
+        localStorage.setItem('myFavJokes', JSON.stringify(this.listOfFavJokes))
       }
     },
     async getNewJoke () {
       const newJoke = await this.getJoke()
-      this.jokesJson.unshift(newJoke)
-      if (this.jokesJson.length > 10) {
-        this.jokesJson.pop()
+      this.listOfJokes.unshift(newJoke)
+      if (this.listOfJokes.length > 10) {
+        this.listOfJokes.pop()
       }
     },
     async getJoke () {
@@ -76,17 +76,17 @@ export default {
     addToFavouraites (joke) {
       joke.addedtoFav = true
       let i = 0
-      for (const element of this.favorites) {
+      for (const element of this.listOfFavJokes) {
         if (joke.id === element.id) {
           joke.addedtoFav = false
-          this.favorites.splice(i, 1)
+          this.listOfFavJokes.splice(i, 1)
           return
         }
         i++
       }
-      this.favorites.unshift(joke)
-      if (this.favorites.length > 10) {
-        this.favorites.pop()
+      this.listOfFavJokes.unshift(joke)
+      if (this.listOfFavJokes.length > 10) {
+        this.listOfFavJokes.pop()
       }
     },
     async getIntialJokes () {
